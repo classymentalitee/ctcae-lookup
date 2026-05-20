@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CTCAE Term Lookup — NCI CTCAE v5.0</title>
+  <meta name="description" content="Free tool for clinical research coordinators to map patient observations to NCI CTCAE v5.0 adverse event terms and grade definitions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #0B2545;
+      --navy2:  #163A6B;
+      --blue:   #1A5FAD;
+      --blue-l: #2E7DD6;
+      --teal:   #0D9488;
+      --teal-l: #14B8A6;
+      --slate:  #64748B;
+      --slate-l:#94A3B8;
+      --bg:     #F4F7FB;
+      --bg2:    #FFFFFF;
+      --border: #DDE5F0;
+      --text:   #0F1E33;
+      --text2:  #3D5270;
+      --text3:  #64748B;
+      --g1:     #4D7C0F;
+      --g2:     #92400E;
+      --g3:     #C2410C;
+      --g4:     #991B1B;
+      --g5:     #450A0A;
+      --shadow: 0 1px 3px rgba(11,37,69,.07), 0 4px 16px rgba(11,37,69,.05);
+      --shadow-lg: 0 4px 24px rgba(11,37,69,.12);
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Header ──────────────────────────────────────────────── */
+    header {
+      background: var(--navy);
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+      gap: 16px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--teal);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'DM Serif Display', serif;
+      font-size: 15px;
+      color: #fff;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+    .logo-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.2px;
+    }
+    .logo-text span { color: var(--teal-l); }
+    .header-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 100px;
+      background: rgba(255,255,255,.1);
+      color: rgba(255,255,255,.7);
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    /* ── Hero ────────────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(160deg, var(--navy) 0%, var(--navy2) 100%);
+      padding: 52px 24px 48px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--teal-l);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .hero-eyebrow::before, .hero-eyebrow::after {
+      content: '';
+      display: block;
+      width: 24px; height: 1px;
+      background: var(--teal-l);
+      opacity: 0.5;
+    }
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(28px, 5vw, 42px);
+      color: #fff;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+      margin-bottom: 14px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--teal-l);
+    }
+    .hero p {
+      font-size: 16px;
+      color: rgba(255,255,255,.65);
+      max-width: 520px;
+      margin: 0 auto 28px;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--teal-l);
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: rgba(255,255,255,.45);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    /* ── Main Layout ─────────────────────────────────────────── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    /* ── Search Card ─────────────────────────────────────────── */
+    .search-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 24px;
+    }
+    .search-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      letter-spacing: 0.3px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .search-label .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+    .search-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    textarea {
+      flex: 1;
+      min-height: 80px;
+      max-height: 200px;
+      resize: vertical;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--text);
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    textarea:focus {
+      border-color: var(--blue-l);
+      box-shadow: 0 0 0 3px rgba(46,125,214,.12);
+    }
+    textarea::placeholder { color: var(--slate-l); }
+
+    .btn-search {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      width: 80px;
+      height: 80px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-search:hover { background: var(--navy2); }
+    .btn-search:active { transform: scale(0.97); }
+    .btn-search:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+    .btn-search svg { width: 22px; height: 22px; }
+
+    /* Examples */
+    .examples-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 14px;
+      align-items: center;
+    }
+    .examples-label {
+      font-size: 12px;
+      color: var(--text3);
+      margin-right: 2px;
+    }
+    .chip {
+      font-size: 12px;
+      padding: 5px 11px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .chip:hover {
+      border-color: var(--blue-l);
+      background: #EEF5FF;
+      color: var(--blue);
+    }
+
+    /* Keyboard hint */
+    .kbd-hint {
+      font-size: 11px;
+      color: var(--slate-l);
+      margin-top: 10px;
+      text-align: right;
+    }
+    kbd {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 5px;
+      color: var(--text3);
+    }
+
+    /* ── Output ──────────────────────────────────────────────── */
+    #output { min-height: 60px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--slate-l);
+    }
+    .empty-state svg {
+      width: 44px; height: 44px;
+      opacity: 0.35;
+      margin-bottom: 12px;
+    }
+    .empty-state p { font-size: 14px; }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 28px;
+      color: var(--text3);
+      font-size: 14px;
+    }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2.5px solid var(--border);
+      border-top-color: var(--blue-l);
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      padding: 16px 20px;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: var(--radius);
+      font-size: 14px;
+      color: #991B1B;
+      line-height: 1.6;
+    }
+    .error-box strong { display: block; margin-bottom: 4px; }
+
+    /* Results */
+    .results-meta {
+      font-size: 12px;
+      color: var(--text3);
+      margin-bottom: 12px;
+      padding: 0 2px;
+    }
+    .results-meta strong { color: var(--text2); }
+
+    .results { display: flex; flex-direction: column; gap: 12px; }
+
+    .result-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      box-shadow: var(--shadow);
+      animation: rise 0.28s ease both;
+    }
+    .result-card:nth-child(2) { animation-delay: 0.05s; }
+    .result-card:nth-child(3) { animation-delay: 0.10s; }
+    .result-card:nth-child(4) { animation-delay: 0.15s; }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .result-card.top-match {
+      border-color: var(--blue-l);
+      border-left: 4px solid var(--blue);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+    .card-term {
+      font-family: 'DM Serif Display', serif;
+      font-size: 19px;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+    .card-badges {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .soc-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 100px;
+      background: #ECFDF5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+      white-space: nowrap;
+      max-width: 200px;
+      text-align: right;
+      line-height: 1.4;
+    }
+    .match-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+      background: #EFF6FF;
+      color: var(--blue);
+      border: 1px solid #BFDBFE;
+    }
+
+    .card-definition {
+      font-size: 13.5px;
+      color: var(--text2);
+      line-height: 1.7;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .grades-heading {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--slate);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 10px;
+    }
+    .grades { display: flex; flex-direction: column; gap: 7px; }
+    .grade-row {
+      display: grid;
+      grid-template-columns: 76px 1fr;
+      gap: 10px;
+      align-items: baseline;
+    }
+    .grade-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+      text-align: center;
+      display: inline-block;
+      width: fit-content;
+    }
+    .g1 { background: #F0FDF4; color: var(--g1); border: 1px solid #BBF7D0; }
+    .g2 { background: #FFFBEB; color: var(--g2); border: 1px solid #FDE68A; }
+    .g3 { background: #FFF7ED; color: var(--g3); border: 1px solid #FDBA74; }
+    .g4 { background: #FEF2F2; color: var(--g4); border: 1px solid #FECACA; }
+    .g5 { background: #450A0A; color: #FCA5A5; border: 1px solid #7F1D1D; }
+    .grade-desc { font-size: 13px; color: var(--text2); line-height: 1.55; }
+
+    .card-note {
+      margin-top: 14px;
+      padding: 10px 13px;
+      background: #F8FAFF;
+      border: 1px solid #DBEAFE;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      color: var(--blue);
+      line-height: 1.6;
+      display: flex;
+      gap: 7px;
+    }
+    .card-note svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+
+    .confidence-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .conf-label { font-size: 11px; color: var(--slate-l); white-space: nowrap; }
+    .conf-bar {
+      flex: 1;
+      height: 4px;
+      background: var(--bg);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .conf-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--blue-l), var(--teal));
+      transition: width 0.6s ease;
+    }
+    .conf-pct {
+      font-size: 11px;
+      color: var(--text3);
+      min-width: 32px;
+      text-align: right;
+      font-weight: 500;
+    }
+
+    /* ── Disclaimer ──────────────────────────────────────────── */
+    .disclaimer {
+      margin-top: 28px;
+      padding: 14px 18px;
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: var(--radius);
+      font-size: 12.5px;
+      color: #78350F;
+      line-height: 1.7;
+      display: flex;
+      gap: 10px;
+    }
+    .disclaimer svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; color: #D97706; }
+    .disclaimer a { color: #92400E; font-weight: 500; }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    footer {
+      background: var(--navy);
+      padding: 28px 24px;
+      text-align: center;
+      margin-top: 48px;
+    }
+    .footer-inner {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    footer p {
+      font-size: 12px;
+      color: rgba(255,255,255,.35);
+      line-height: 1.8;
+    }
+    footer a { color: rgba(255,255,255,.5); text-decoration: none; }
+    footer a:hover { color: var(--teal-l); }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 540px) {
+      .search-row { flex-direction: column; }
+      .btn-search { width: 100%; height: 46px; flex-direction: row; gap: 8px; }
+      .hero { padding: 36px 20px 32px; }
+      .hero-stats { gap: 20px; }
+      .card-header { flex-direction: column; gap: 8px; }
+      .card-badges { flex-direction: row; align-items: center; }
+      .grade-row { grid-template-columns: 66px 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="/">
+      <div class="logo-mark">AE</div>
+      <div class="logo-text">CTCAE <span>Lookup</span></div>
+    </a>
+    <span class="header-badge">NCI CTCAE v5.0</span>
+  </div>
+</header>
+
+<!-- Demo Banner -->
+<div style="background:#FEF3C7;border-bottom:1px solid #FCD34D;padding:9px 24px;text-align:center;font-size:13px;color:#78350F;">
+  <strong>⚠️ Demo Mode</strong> — Showing example responses. No API key required. Results are pre-set for testing purposes only.
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">Clinical Research Tool</div>
+  <h1>Map findings to<br><em>CTCAE terminology</em></h1>
+  <p>Describe a patient observation in plain language. Get the correct NCI CTCAE v5.0 adverse event term and grade definitions instantly.</p>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">v5.0</div>
+      <div class="stat-label">CTCAE Version</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">800+</div>
+      <div class="stat-label">AE Terms</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">26</div>
+      <div class="stat-label">System Organ Classes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">Free</div>
+      <div class="stat-label">Always</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<main>
+
+  <div class="search-card">
+    <div class="search-label">
+      <span class="dot"></span>
+      Clinical description or observation
+    </div>
+    <div class="search-row">
+      <textarea
+        id="query"
+        placeholder="e.g. &quot;patient has not eaten in two days and feels nauseous&quot; or &quot;creatinine 2.4, baseline was 0.9&quot; or &quot;low white blood cell count&quot;"
+        rows="3"
+        aria-label="Clinical description"
+      ></textarea>
+      <button class="btn-search" id="searchBtn" onclick="doSearch()" aria-label="Search CTCAE terms">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Search
+      </button>
+    </div>
+    <div class="examples-row">
+      <span class="examples-label">Try:</span>
+      <button class="chip" onclick="useExample(this)">low pancreatic enzymes</button>
+      <button class="chip" onclick="useExample(this)">patient hasn't eaten in 2 days</button>
+      <button class="chip" onclick="useExample(this)">WBC 1.8</button>
+      <button class="chip" onclick="useExample(this)">creatinine 2.4, baseline 0.9</button>
+      <button class="chip" onclick="useExample(this)">severe mouth sores, can't swallow</button>
+      <button class="chip" onclick="useExample(this)">numbness and tingling in feet</button>
+      <button class="chip" onclick="useExample(this)">hair loss</button>
+    </div>
+    <p class="kbd-hint">Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to search</p>
+  </div>
+
+  <div id="output">
+    <div class="empty-state">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .03 2.7-1.31 2.38l-3.185-.796a9 9 0 00-4.33 0l-3.184.796c-1.342.32-2.313-1.38-1.313-2.38L5 14.5"/>
+      </svg>
+      <p>Enter a clinical description above to find matching CTCAE v5.0 terms</p>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+    </svg>
+    <div>
+      <strong style="display:block;margin-bottom:2px;">For reference only — always verify.</strong>
+      This tool uses AI to suggest CTCAE v5.0 terms. Always confirm against the official
+      <a href="https://dctd.cancer.gov/research/ctep-trials/for-sites/adverse-events/ctcae-v5-5x7.pdf" target="_blank" rel="noopener">NCI CTCAE v5.0 document</a>.
+      Clinical judgment and your protocol's specific guidance take precedence.
+    </div>
+  </div>
+
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <p>
+      CTCAE Lookup is a free tool for clinical research professionals.<br />
+      Not affiliated with NCI or the National Institutes of Health.<br />
+      Reference document: <a href="https://dctd.cancer.gov/research/ctep-trials/for-sites/adverse-events/ctcae-v5-5x7.pdf" target="_blank" rel="noopener">NCI CTCAE v5.0</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+  // ── Helpers ────────────────────────────────────────────────
+  function useExample(el) {
+    document.getElementById('query').value = el.textContent.trim();
+    doSearch();
+  }
+
+  // ── Search ─────────────────────────────────────────────────
+  async function doSearch() {
+    const query = document.getElementById('query').value.trim();
+    if (!query) return;
+
+    const btn = document.getElementById('searchBtn');
+    const output = document.getElementById('output');
+    btn.disabled = true;
+
+    output.innerHTML = `
+      <div class="loading">
+        <div class="spinner"></div>
+        Searching CTCAE v5.0 terminology…
+      </div>`;
+
+    try {
+      const resp = await fetch('/api/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+
+      const data = await resp.json();
+
+      if (!resp.ok || data.error) {
+        throw new Error(data.error || 'Unexpected server error.');
+      }
+
+      renderResults(data);
+    } catch (err) {
+      output.innerHTML = `
+        <div class="error-box">
+          <strong>Could not retrieve results</strong>
+          ${err.message || 'Please try again in a moment.'}
+        </div>`;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────
+  function renderResults(data) {
+    const output = document.getElementById('output');
+
+    if (!data.terms || !data.terms.length) {
+      output.innerHTML = `
+        <div class="empty-state">
+          <p>No matching CTCAE v5.0 terms found. Try rephrasing your description.</p>
+        </div>`;
+      return;
+    }
+
+    const gClass  = { '1':'g1','2':'g2','3':'g3','4':'g4','5':'g5' };
+    const gLabels = { '1':'Grade 1','2':'Grade 2','3':'Grade 3','4':'Grade 4','5':'Grade 5' };
+
+    let html = `
+      <p class="results-meta">
+        <strong>${data.terms.length} term${data.terms.length !== 1 ? 's' : ''} found</strong>
+        ${data.summary ? '&nbsp;·&nbsp;' + escHtml(data.summary) : ''}
+      </p>
+      <div class="results">`;
+
+    data.terms.forEach((term, idx) => {
+      // Grades
+      let gradesHtml = '';
+      if (term.grades && Object.keys(term.grades).length) {
+        gradesHtml = `<div class="grades-heading">Grade Definitions</div><div class="grades">`;
+        ['1','2','3','4','5'].forEach(g => {
+          const desc = term.grades[g];
+          if (desc && desc.toLowerCase() !== 'n/a') {
+            gradesHtml += `
+              <div class="grade-row">
+                <span class="grade-pill ${gClass[g]}">${gLabels[g]}</span>
+                <span class="grade-desc">${escHtml(desc)}</span>
+              </div>`;
+          }
+        });
+        gradesHtml += `</div>`;
+      }
+
+      // Note
+      const noteHtml = term.note ? `
+        <div class="card-note">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/>
+          </svg>
+          ${escHtml(term.note)}
+        </div>` : '';
+
+      const rel = Math.min(100, Math.max(0, term.relevance || 0));
+
+      html += `
+        <div class="result-card ${idx === 0 ? 'top-match' : ''}">
+          <div class="card-header">
+            <div class="card-term">${escHtml(term.term)}</div>
+            <div class="card-badges">
+              ${term.soc ? `<span class="soc-badge">${escHtml(term.soc)}</span>` : ''}
+              <span class="match-badge">${rel}% match</span>
+            </div>
+          </div>
+          ${term.definition ? `<div class="card-definition">${escHtml(term.definition)}</div>` : ''}
+          ${gradesHtml}
+          ${noteHtml}
+          <div class="confidence-row">
+            <span class="conf-label">Match confidence</span>
+            <div class="conf-bar">
+              <div class="conf-fill" style="width:${rel}%"></div>
+            </div>
+            <span class="conf-pct">${rel}%</span>
+          </div>
+        </div>`;
+    });
+
+    html += `</div>`;
+    output.innerHTML = html;
+
+    // Animate confidence bars after render
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.conf-fill').forEach(el => {
+        const w = el.style.width;
+        el.style.width = '0%';
+        requestAnimationFrame(() => { el.style.width = w; });
+      });
+    });
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  // Keyboard shortcut
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('query').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        doSearch();
+      }
+    });
+  });
+</script>
+</body>
+</html>
