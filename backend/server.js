@@ -64,7 +64,7 @@ Rules:
 - relevance is an integer 0-100
 - Use the EXACT term name as it appears in CTCAE v5.0
 - Include all applicable grade descriptions verbatim from CTCAE v5.0
-- If a lab value is provided, note the likely grade in the note field if determinable
+- - If a lab value is provided, determine the grade precisely using the exact numeric boundaries in CTCAE v5.0. Be conservative — only suggest a grade if the value clearly falls within that grade's range. If a value sits at a boundary, note the ambiguity rather than suggesting multiple grades.
 - If the description is ambiguous, return your best matches and explain briefly in note
 - Never invent or approximate terms not present in CTCAE v5.0
 - Do not include any text outside the JSON object`;
