@@ -705,6 +705,7 @@
 
   // ── Render ─────────────────────────────────────────────────
   function renderResults(data) {
+    data.terms.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
     const output = document.getElementById('output');
 
     if (!data.terms || !data.terms.length) {
