@@ -78,7 +78,7 @@ Return ONLY raw JSON (no markdown, no backticks, no preamble):
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
+        model: "claude-sonnet-4-5",
         max_tokens: 1200,
         system: systemPrompt,
         messages: [{ role: "user", content: `Clinical description: ${query.trim()}` }]
