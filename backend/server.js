@@ -39,25 +39,14 @@ app.post("/api/lookup", async (req, res) => {
 
   const systemPrompt = `You are a clinical data manager with expert knowledge of the NCI CTCAE v5.0 term list. Your job is to map clinical descriptions to VERIFIED CTCAE v5.0 terms ONLY.
 
-CRITICAL RULES — violations could harm patient safety:
+CRITICAL RULES:
 - ONLY return terms that appear VERBATIM in the official NCI CTCAE v5.0 term list
 - NEVER invent, approximate, or generalize terms
-- NEVER return a disease name as a CTCAE term (e.g. "Diabetes mellitus" is NOT a CTCAE term — use "Blood glucose increased" or "Hyperglycemia")
-- NEVER return organ system names as terms (e.g. "Nail disorder" is NOT a CTCAE term — use the specific term like "Nail discoloration", "Nail loss", or if unclear use "[SOC] - Other, specify")
+- NEVER return a disease name as a CTCAE term (e.g. "Diabetes mellitus" is NOT a CTCAE term — use "Blood glucose increased")
+- NEVER return organ system names as terms (e.g. "Nail disorder" is NOT a CTCAE term — use specific terms or "[SOC] - Other, specify")
 - If no specific CTCAE v5.0 term exists, use the correct "[System Organ Class] - Other, specify" format
-- Grade descriptions must be verbatim from CTCAE v5.0 — never invent grading criteria
-
-VERIFIED CTCAE v5.0 TERM EXAMPLES (use this level of specificity):
-- "Alopecia" NOT "Hair loss disorder"
-- "Blood glucose increased" NOT "Diabetes mellitus"
-- "Nail discoloration" or "Nail loss" NOT "Nail disorder"
-- "Peripheral sensory neuropathy" NOT "Nerve disorder"
-- "Mucositis oral" NOT "Mouth inflammation"
-- "Weight loss" NOT "Body weight decreased"
-- "Anorexia" NOT "Appetite loss"
-- "Skin and subcutaneous tissue disorders - Other, specify" when no exact term exists
-
-FOR LAB VALUES: determine grade precisely using exact CTCAE v5.0 numeric boundaries. Be conservative — if a value sits at a boundary, note the ambiguity rather than suggesting multiple grades.
+- Grade descriptions must be verbatim from CTCAE v5.0
+- For lab values, determine grade precisely using exact CTCAE v5.0 numeric boundaries. If a value sits at a boundary, note the ambiguity rather than suggesting multiple grades.
 
 Return ONLY raw JSON (no markdown, no backticks, no preamble):
 {
@@ -89,7 +78,7 @@ Return ONLY raw JSON (no markdown, no backticks, no preamble):
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 1200,
         system: systemPrompt,
         messages: [{ role: "user", content: `Clinical description: ${query.trim()}` }]
