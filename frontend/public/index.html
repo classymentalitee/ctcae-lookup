@@ -664,6 +664,7 @@
   }
 
   // ── Search ─────────────────────────────────────────────────
+  // ── Search ─────────────────────────────────────────────────
   async function doSearch() {
     const query = document.getElementById('query').value.trim();
     if (!query) return;
@@ -675,32 +676,80 @@
     output.innerHTML = `
       <div class="loading">
         <div class="spinner"></div>
-        Searching CTCAE v5.0 terminology…
+        <span id="loadingText">Searching CTCAE v5.0 terminology…</span>
       </div>`;
 
+    const messages = [
+      'Searching CTCAE v5.0 terminology…',
+      'Analyzing clinical description…',
+      'Matching adverse event terms…',
+      'Retrieving grade definitions…'
+    ];
+    let msgIndex = 0;
+    const msgInterval = setInterval(() => {
+      msgIndex = (msgIndex + 1) % messages.length;
+      const el = document.getElementById('loadingText');
+      if (el) el.textContent = messages[msgIndex];
+    }, 1800);
+
     try {
+      const eventSource = new EventSource(`/api/lookup?query=${encodeURIComponent(query)}`, { withCredentials: false });
+
+      // Fallback: POST via fetch for the actual request
+      eventSource.close();
+
       const resp = await fetch('/api/lookup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query })
       });
 
-      const data = await resp.json();
+      clearInterval(msgInterval);
 
-      if (!resp.ok || data.error) {
+      if (!resp.ok && !resp.headers.get('content-type')?.includes('text/event-stream')) {
+        const data = await resp.json();
         throw new Error(data.error || 'Unexpected server error.');
       }
 
-      renderResults(data);
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const json = line.slice(6).trim();
+            if (!json) continue;
+            try {
+              const msg = JSON.parse(json);
+              if (msg.error) throw new Error(msg.error);
+              if (msg.type === 'result') renderResults(msg.data);
+            } catch (e) {
+              if (e.message !== 'Unexpected end of JSON input') throw e;
+            }
+          }
+        }
+      }
+
     } catch (err) {
+      clearInterval(msgInterval);
       output.innerHTML = `
         <div class="error-box">
           <strong>Could not retrieve results</strong>
           ${err.message || 'Please try again in a moment.'}
         </div>`;
     } finally {
+      clearInterval(msgInterval);
       btn.disabled = false;
     }
+  }
   }
 
   // ── Render ─────────────────────────────────────────────────
