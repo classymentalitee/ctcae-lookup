@@ -69,6 +69,11 @@ Return ONLY raw JSON (no markdown, no backticks, no preamble):
   "summary": "One sentence explaining the mapping"
 }`;
 
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
   try {
     const anthropicResp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -80,29 +85,55 @@ Return ONLY raw JSON (no markdown, no backticks, no preamble):
       body: JSON.stringify({
         model: "claude-sonnet-4-5",
         max_tokens: 1200,
+        stream: true,
         system: systemPrompt,
         messages: [{ role: "user", content: `Clinical description: ${query.trim()}` }]
       })
     });
 
     if (!anthropicResp.ok) {
-      const errBody = await anthropicResp.json().catch(() => ({}));
-      return res.status(502).json({ error: "AI service error. Please try again shortly." });
+      res.write(`data: ${JSON.stringify({ error: "AI service error. Please try again shortly." })}\n\n`);
+      res.end();
+      return;
     }
 
-    const anthropicData = await anthropicResp.json();
-    const rawText = (anthropicData.content || []).map(b => b.text || "").join("").trim();
+    let fullText = '';
+    const reader = anthropicResp.body.getReader();
+    const decoder = new TextDecoder();
 
-    let parsed;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+              fullText += parsed.delta.text;
+              res.write(`data: ${JSON.stringify({ type: 'progress' })}\n\n`);
+            }
+          } catch {}
+        }
+      }
+    }
+
     try {
-      parsed = JSON.parse(rawText.replace(/^```json|```$/g, "").trim());
+      const clean = fullText.replace(/^```json|```$/g, '').trim();
+      const result = JSON.parse(clean);
+      result.terms.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
+      res.write(`data: ${JSON.stringify({ type: 'result', data: result })}\n\n`);
     } catch {
-      return res.status(500).json({ error: "Could not parse AI response. Please try again." });
+      res.write(`data: ${JSON.stringify({ error: "Could not parse AI response. Please try again." })}\n\n`);
     }
 
-    return res.json(parsed);
+    res.end();
   } catch (err) {
-    return res.status(500).json({ error: "Server error. Please try again." });
+    res.write(`data: ${JSON.stringify({ error: "Server error. Please try again." })}\n\n`);
+    res.end();
   }
 });
 
