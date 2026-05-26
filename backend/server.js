@@ -52,9 +52,9 @@ const termIndex = CTCAE_TERMS.map(term => {
   return { ...term, keywords: getKeywords(searchText) };
 });
 
-function searchTerms(query, topN = 8) {
-  const queryKeywords = getKeywords(query);
-  const queryLower = query.toLowerCase();
+function searchTerms(keywords, topN = 8) {
+  const queryKeywords = getKeywords(keywords.join(' '));
+  const queryLower = keywords.join(' ').toLowerCase();
 
   const scores = termIndex.map(term => {
     let score = 0;
@@ -86,6 +86,45 @@ function searchTerms(query, topN = 8) {
     .map(s => s.term);
 }
 
+async function extractMedicalKeywords(query, apiKey) {
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01"
+    },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 200,
+      messages: [{
+        role: "user",
+        content: `Extract medical/clinical keywords from this description that would match CTCAE adverse event terms. Return ONLY a JSON array of strings, no other text.
+
+Examples:
+"patient hasn't eaten in 2 days" -> ["anorexia", "appetite loss", "nausea", "weight loss", "oral intake"]
+"low white blood cell count" -> ["leukocyte", "white blood cell", "neutrophil", "decreased"]
+"bleeding in the brain" -> ["intracranial", "hemorrhage", "bleeding", "cerebral"]
+"thick toenails" -> ["nail", "onychomycosis", "skin", "subcutaneous"]
+
+Description: "${query}"
+
+Return only the JSON array:`
+      }]
+    })
+  });
+
+  if (!resp.ok) return [query];
+  const data = await resp.json();
+  const text = (data.content || []).map(b => b.text || "").join("").trim();
+  try {
+    const keywords = JSON.parse(text.replace(/```json|```/g, "").trim());
+    return Array.isArray(keywords) ? keywords : [query];
+  } catch {
+    return [query];
+  }
+}
+
 app.post("/api/lookup", async (req, res) => {
   const { query } = req.body;
 
@@ -101,7 +140,11 @@ app.post("/api/lookup", async (req, res) => {
     return res.status(500).json({ error: "Server configuration error." });
   }
 
-  const candidates = searchTerms(query.trim());
+  // Stage 1: Extract medical keywords using fast Haiku model
+  const keywords = await extractMedicalKeywords(query.trim(), apiKey);
+
+  // Stage 2: Search database with those keywords
+  const candidates = searchTerms(keywords);
 
   if (candidates.length === 0) {
     return res.json({
@@ -110,6 +153,7 @@ app.post("/api/lookup", async (req, res) => {
     });
   }
 
+  // Stage 3: Build context from candidates
   const context = candidates.map(t => {
     const gradeLines = Object.entries(t.grades || {})
       .sort(([a], [b]) => Number(a) - Number(b))
